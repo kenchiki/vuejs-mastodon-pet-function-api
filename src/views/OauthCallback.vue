@@ -6,28 +6,29 @@
 <script lang="ts">
 import Account from '@/store/Account'
 import { getModule } from 'vuex-module-decorators'
-import { onActivated, onMounted, reactive, ref, computed, SetupContext } from '@vue/composition-api'
-import router from '@/router'
-import { useStore } from '@/provide'
+import { reactive, SetupContext } from '@vue/composition-api'
+import { UnwrapRef } from '@vue/composition-api/dist/reactivity'
 
 export default {
   setup (props: {}, context: SetupContext) {
-    redirect()
+    const state: UnwrapRef<any> = reactive({
+      store: context.root.$store,
+      route: context.root.$route,
+      router: context.root.$router
+    })
 
-    async function redirect (): Promise<any> {
-      const store = useStore()
-      alert('aa')
-      alert(store)
-      // await account().fetchToken(router.query.code as string)
-      // await router.push({ name: 'home' })
-
-      // await account().fetchToken(context.root.$test.query.code as string)
-      // await this.$router.push({ name: 'home' })
+    async function redirect () {
+      await account().fetchToken(state.route.query.code as string)
+      await state.router.push({ name: 'home' })
     }
 
     function account (): Account {
-      return getModule(Account, context.root.$store)
+      return getModule(Account, state.store)
     }
+
+    redirect()
+
+    return {}
   }
 }
 </script>

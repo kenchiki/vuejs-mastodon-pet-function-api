@@ -8,11 +8,6 @@
     <div class="form-group">
       <input type="button" value="ログイン" v-on:click="login" class="form-control btn btn-danger">
     </div>
-
-    <div>
-      <p>{{ state.count }}</p>
-      <p><input type="button" value="ふやす" v-on:click="increment" class="form-control btn btn-danger"></p>
-    </div>
   </div>
 </template>
 
@@ -21,18 +16,12 @@ import Account from '@/store/Account'
 import { getModule } from 'vuex-module-decorators'
 import { reactive, ref, computed, SetupContext } from '@vue/composition-api'
 import { UnwrapRef } from '@vue/composition-api/dist/reactivity'
-import { useStore } from '@/provide'
 
 export default {
   setup (props: {}, context: SetupContext) {
-    // account (): Account {
-    //   return getModule(Account, this.$store)
-    // }
-
     const state: UnwrapRef<any> = reactive({
       mastodonUrl: process.env.VUE_APP_MASTODON_ORIGIN,
-      count: 1,
-      store: useStore(),
+      store: context.root.$store,
       double: computed(() => state.count * 2)
     })
 
@@ -40,17 +29,13 @@ export default {
       return getModule(Account, state.store)
     }
 
-    function increment () {
-      state.count++
-    }
-
     async function login () {
       await account().login(state.mastodonUrl)
     }
 
+    // returnするのは外部から呼び出すものだけ（privateで呼び出すのは渡さなくていい）
     return {
       state,
-      increment,
       login
     }
   }
