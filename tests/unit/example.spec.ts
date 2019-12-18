@@ -5,15 +5,15 @@
 // 下のURLでは力技で回避しているみたいだが、composition-apiはバージョンアップしていくので待つしかなさそう
 // https://github.com/vuejs/composition-api/issues/63
 
-// import { shallowMount } from '@vue/test-utils'
-// import HelloWorld from '@/components/HelloWorld.vue'
-//
-// describe('HelloWorld.vue', () => {
-//   it('renders props.msg when passed', () => {
-//     const msg = 'new message'
-//     const wrapper = shallowMount(HelloWorld, {
-//       propsData: { msg }
-//     })
-//     expect(wrapper.text()).toMatch(msg)
-//   })
-// })
+import { shallowMount } from '@vue/test-utils'
+import HelloWorld from '@/components/HelloWorld.vue'
+
+describe('HelloWorld.vue', () => {
+  it('renders props.msg when passed', () => {
+    const msg = 'new message'
+    const wrapper = shallowMount(HelloWorld as any, {
+      propsData: { msg }
+    })
+    expect(wrapper.text()).toMatch(msg)
+  })
+})
