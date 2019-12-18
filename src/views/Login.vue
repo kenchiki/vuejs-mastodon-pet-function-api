@@ -21,7 +21,7 @@ import Account from '@/store/Account'
 import { getModule } from 'vuex-module-decorators'
 import { reactive, ref, computed, SetupContext } from '@vue/composition-api'
 import { UnwrapRef } from '@vue/composition-api/dist/reactivity'
-// import { useStore } from '@/provide'
+import { useStore } from '@/provide'
 
 export default {
   setup (props: {}, context: SetupContext) {
@@ -32,12 +32,12 @@ export default {
     const state: UnwrapRef<any> = reactive({
       mastodonUrl: process.env.VUE_APP_MASTODON_ORIGIN,
       count: 1,
+      store: useStore(),
       double: computed(() => state.count * 2)
     })
 
     function account (): Account {
-      // const store = useStore()
-      return getModule(Account, context.root.$store)
+      return getModule(Account, state.store)
     }
 
     function increment () {
