@@ -1,11 +1,11 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import Account from './Account'
-import { getModule } from 'vuex-module-decorators'
+import Messages from './Messages'
 
 Vue.use(Vuex)
 
-const store = new Vuex.Store({
+export default new Vuex.Store({
   state: {
   },
   mutations: {
@@ -13,12 +13,7 @@ const store = new Vuex.Store({
   actions: {
   },
   modules: {
-    Account: Account
+    Account,
+    Messages
   }
 })
-
-// 初期化
-const account = getModule(Account, store)
-account.init()
-
-export default store

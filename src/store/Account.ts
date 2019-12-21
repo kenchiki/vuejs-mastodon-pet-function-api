@@ -2,24 +2,17 @@ import { Module, VuexModule, Mutation, Action } from 'vuex-module-decorators'
 import qs from 'qs'
 import axios from 'axios'
 
-interface ServerResponse {
-  data: ServerData
-}
-
-interface ServerData {
-  // 返ってくるマストドンのAPPのIDはキャメルケースではないので
-  // eslint-disable-next-line camelcase
-  client_id: string
-  // eslint-disable-next-line camelcase
-  client_secret: string
-}
-
 @Module({ name: 'Account', namespaced: true, stateFactory: true })
 export default class Account extends VuexModule {
   public error: Error | null = null
   public localStorage: Storage = localStorage
   public sessionStorage: Storage = sessionStorage
   public token: string | null = null
+  public streamingUrl: string | null = null
+  public instanceName: string | null = null
+  public mastodonUrl: string | null = null
+  public clientId: string | null = null
+  public clientSecret: string | null = null
 
   // client、tokenどちらを取得する際も同一のものを指定する必要あり（認証のところで無効と表示されてしまうため）
   static readonly API_SCOPE: string = 'read write';
@@ -30,40 +23,23 @@ export default class Account extends VuexModule {
   }
 
   @Mutation
-  setMastodonUrl (mastodonUrl: string) {
-    this.sessionStorage.setItem('mastodon_url', mastodonUrl)
-  }
-
-  @Mutation
   setError (error: Error | null) {
     this.error = error
   }
 
   @Mutation
-  setToken (token: string) {
-    this.token = token
-  }
-
-  @Mutation
-  setStreamingUrl (streamingUrl: string) {
-    this.sessionStorage.setItem('streaming_url', streamingUrl)
-  }
-
-  @Mutation
-  setInstanceName (instanceName: string) {
-    this.sessionStorage.setItem('instance_name', instanceName)
-  }
-
-  @Mutation
-  setClient (response: ServerResponse) {
-    const { data } = response
-    this.sessionStorage.setItem('client_id', data.client_id)
-    this.sessionStorage.setItem('client_secret', data.client_secret)
+  restoreFromStorage () {
+    this.token = this.localStorage.getItem('token')!
+    this.streamingUrl = this.localStorage.getItem('streaming_url')!
+    this.instanceName = this.localStorage.getItem('instance_name')!
+    this.mastodonUrl = this.localStorage.getItem('mastodon_url')!
+    this.clientId = this.localStorage.getItem('client_id')!
+    this.clientSecret = this.localStorage.getItem('client_secret')!
   }
 
   @Action({})
   async login (mastodonUrl: string) {
-    this.setMastodonUrl(mastodonUrl)
+    this.setStorage({ key: 'mastodon_url', value: mastodonUrl })
     await this.fetchClient()
     this.fetchCode()
   }
@@ -77,17 +53,23 @@ export default class Account extends VuexModule {
       scopes: Account.API_SCOPE
     }
 
-    // https://docs.joinmastodon.org/api/rest/apps/#post-api-v1-apps
     try {
       const response = await axios.post(
-        `${this.sessionStorage.getItem('mastodon_url')}/api/v1/apps`,
+        `${this.mastodonUrl}/api/v1/apps`,
         postParams
       )
-      this.setClient(response)
+      this.setStorage({ key: 'client_id', value: response.data.client_id })
+      this.setStorage({ key: 'client_secret', value: response.data.client_secret })
       this.setError(null)
     } catch (error) {
       this.setError(error)
     }
+  }
+
+  @Action({})
+  setStorage ({ key, value }) {
+    this.localStorage.setItem(key, value)
+    this.restoreFromStorage()
   }
 
   // mastodonに認証してcode取得
@@ -95,13 +77,13 @@ export default class Account extends VuexModule {
   fetchCode () {
     const getParams = {
       response_type: 'code',
-      client_id: this.sessionStorage.getItem('client_id'),
+      client_id: this.clientId,
       redirect_uri: Account.REDIRECT_URI(),
       scope: Account.API_SCOPE
     }
 
     // https://docs.joinmastodon.org/api/authentication/#get-oauth-authorize
-    const authUrl = new URL(`${this.sessionStorage.getItem('mastodon_url')}/oauth/authorize`)
+    const authUrl = new URL(`${this.mastodonUrl}/oauth/authorize`)
     authUrl.search = qs.stringify(getParams)
     document.location.href = authUrl.href
   }
@@ -110,18 +92,16 @@ export default class Account extends VuexModule {
   @Action({})
   async fetchToken (code: string | undefined) {
     const postParams = {
-      client_id: this.sessionStorage.getItem('client_id'),
-      client_secret: this.sessionStorage.getItem('client_secret'),
+      client_id: this.clientId,
+      client_secret: this.clientSecret,
       grant_type: 'authorization_code',
       code: code,
       redirect_uri: Account.REDIRECT_URI()
     }
 
     try {
-      const response = await axios.post(`${this.sessionStorage.getItem('mastodon_url')}/oauth/token`, postParams)
-      const token: string = response.data.access_token
-      this.sessionStorage.setItem('token', token)
-      this.setToken(token)
+      const response = await axios.post(`${this.mastodonUrl}/oauth/token`, postParams)
+      this.setStorage({ key: 'token', value: response.data.access_token })
       this.setError(null)
     } catch (error) {
       this.setError(error)
@@ -134,11 +114,11 @@ export default class Account extends VuexModule {
   @Action({})
   async fetchInstance () {
     try {
-      const response = await axios.get(`${this.sessionStorage.getItem('mastodon_url')}/api/v1/instance`, {
-        headers: { Authorization: `Bearer ${this.sessionStorage.getItem('token')}` }
+      const response = await axios.get(`${this.mastodonUrl}/api/v1/instance`, {
+        headers: { Authorization: `Bearer ${this.token}` }
       })
-      this.setStreamingUrl(response.data.urls.streaming_api)
-      this.setInstanceName(response.data.title)
+      this.setStorage({ key: 'streaming_url', value: response.data.urls.streaming_api })
+      this.setStorage({ key: 'instance_name', value: response.data.title })
       this.setError(null)
     } catch (error) {
       this.setError(error)
@@ -147,8 +127,7 @@ export default class Account extends VuexModule {
 
   @Action({})
   init () {
-    const token: string = this.sessionStorage.getItem('token')!
-    this.setToken(token)
+    this.restoreFromStorage()
   }
 
   static REDIRECT_URI (): string {

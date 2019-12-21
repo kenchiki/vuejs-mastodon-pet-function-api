@@ -3,7 +3,8 @@
     <div id="nav">
       <router-link to="/">Home</router-link> |
       <router-link to="/about">About</router-link>|
-      <router-link to="/login">Login</router-link>
+      <router-link to="/login">Login</router-link> |
+      <router-link to="/messages">Messages</router-link>
     </div>
     <div v-if="isLogin()">
       <Chara />
@@ -36,6 +37,8 @@ export default {
     function account (): Account {
       return getModule(Account, state.store)
     }
+
+    account().init()
 
     return {
       isLogin

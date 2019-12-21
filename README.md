@@ -32,3 +32,7 @@ yarn lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
+# mastodonのAPI
+- [ローカル、ホームなど取得](https://docs.joinmastodon.org/methods/timelines)
+- [ダイレクトメッセージ](https://docs.joinmastodon.org/methods/timelines/conversations)
