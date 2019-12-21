@@ -16,16 +16,17 @@ interface ServerData {
 
 @Module({ name: 'Account', namespaced: true, stateFactory: true })
 export default class Account extends VuexModule {
-  public error: Error | null = null;
-  public localStorage: Storage = localStorage;
-  public sessionStorage: Storage = sessionStorage;
+  public error: Error | null = null
+  public localStorage: Storage = localStorage
+  public sessionStorage: Storage = sessionStorage
+  public token: string | null = null
 
   // client、tokenどちらを取得する際も同一のものを指定する必要あり（認証のところで無効と表示されてしまうため）
   static readonly API_SCOPE: string = 'read write';
   static readonly APP_NAME: string = '銀河ペット';
 
-  get getTest (): string {
-    return this.sessionStorage.getItem('token')!
+  get isLogin (): boolean {
+    return this.token !== null
   }
 
   @Mutation
@@ -40,7 +41,7 @@ export default class Account extends VuexModule {
 
   @Mutation
   setToken (token: string) {
-    this.sessionStorage.setItem('token', token)
+    this.token = token
   }
 
   @Mutation
@@ -118,7 +119,9 @@ export default class Account extends VuexModule {
 
     try {
       const response = await axios.post(`${this.sessionStorage.getItem('mastodon_url')}/oauth/token`, postParams)
-      this.setToken(response.data.access_token)
+      const token: string = response.data.access_token
+      this.sessionStorage.setItem('token', token)
+      this.setToken(token)
       this.setError(null)
     } catch (error) {
       this.setError(error)
@@ -140,6 +143,12 @@ export default class Account extends VuexModule {
     } catch (error) {
       this.setError(error)
     }
+  }
+
+  @Action({})
+  init () {
+    const token: string = this.sessionStorage.getItem('token')!
+    this.setToken(token)
   }
 
   static REDIRECT_URI (): string {

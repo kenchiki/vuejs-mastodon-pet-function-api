@@ -5,9 +5,44 @@
       <router-link to="/about">About</router-link>|
       <router-link to="/login">Login</router-link>
     </div>
+    <div v-if="isLogin()">
+      <Chara />
+    </div>
     <router-view/>
   </div>
 </template>
+
+<script lang="ts">
+import Chara from '@/components/Chara.vue'
+import { getModule } from 'vuex-module-decorators'
+import { reactive, ref, computed, SetupContext } from '@vue/composition-api'
+import Account from '@/store/Account'
+import { UnwrapRef } from '@vue/composition-api/dist/reactivity'
+
+export default {
+  components: {
+    Chara
+  },
+  setup (props: {}, context: SetupContext) {
+    const state: UnwrapRef<any> = reactive({
+      mastodonUrl: process.env.VUE_APP_MASTODON_ORIGIN,
+      store: context.root.$store
+    })
+
+    function isLogin (): boolean {
+      return account().isLogin
+    }
+
+    function account (): Account {
+      return getModule(Account, state.store)
+    }
+
+    return {
+      isLogin
+    }
+  }
+}
+</script>
 
 <style lang="scss">
 #app {

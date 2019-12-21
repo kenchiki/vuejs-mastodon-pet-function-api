@@ -21,8 +21,7 @@ export default {
   setup (props: {}, context: SetupContext) {
     const state: UnwrapRef<any> = reactive({
       mastodonUrl: process.env.VUE_APP_MASTODON_ORIGIN,
-      store: context.root.$store,
-      double: computed(() => state.count * 2)
+      store: context.root.$store
     })
 
     function account (): Account {
