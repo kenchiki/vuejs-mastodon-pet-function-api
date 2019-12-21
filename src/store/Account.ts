@@ -7,9 +7,9 @@ export default class Account extends VuexModule {
   public error: Error | null = null
   private localStorage: Storage = localStorage
   private sessionStorage: Storage = sessionStorage
-  private token: string | null = null
   private clientId: string | null = null
   private clientSecret: string | null = null
+  public token: string | null = null
   public streamingUrl: string | null = null
   public instanceName: string | null = null
   public mastodonUrl: string | null = null

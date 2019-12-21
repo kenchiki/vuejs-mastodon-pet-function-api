@@ -2,8 +2,7 @@
   <div class="home">
     <ul class="timeline__list" v-if="timeline().length">
       <li v-for="message in timeline()" v-bind:key="message.id" class="timeline__status">
-        <p>{{ message.id }}</p>
-        <p>{{ message.last_status.content }}</p>
+        <p>{{ pickVisitorName(message) }}:{{ pickMessage(message) }}</p>
       </li>
     </ul>
   </div>
@@ -20,6 +19,21 @@ export default {
     const state: UnwrapRef<any> = reactive({
       store: context.root.$store
     })
+
+    // eslint-disable-next-line camelcase
+    function pickMessage (message: { last_status: { content: string; } }): string {
+      let content: string = message.last_status.content
+      content = content.replace(/<span class="h-card">.+<\/span>/, '')
+      content = content.replace(/<.+?>/g, '')
+      return content
+    }
+
+    // eslint-disable-next-line camelcase
+    function pickVisitorName (message: { last_status: { account: object; } }): string {
+      // eslint-disable-next-line camelcase
+      const account: { display_name?: string; username?: string; } = message.last_status.account
+      return account.display_name !== '' ? account.display_name! : account.username!
+    }
 
     function timeline () {
       return messages().timeline || []
@@ -38,7 +52,9 @@ export default {
     // returnするのは外部から呼び出すものだけ（privateで呼び出すのは渡さなくていい）
     return {
       state,
-      timeline
+      timeline,
+      pickMessage,
+      pickVisitorName
     }
   }
 }

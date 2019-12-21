@@ -36,3 +36,10 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 # mastodonのAPI
 - [ローカル、ホームなど取得](https://docs.joinmastodon.org/methods/timelines)
 - [ダイレクトメッセージ](https://docs.joinmastodon.org/methods/timelines/conversations)
+
+# mastodonでテスト用ユーザ追加
+- mastodonのフォルダに移動して下記。（パスワードは作成後表示されるのでメモる）
+
+```sh
+bin/tootctl accounts create user01 --email user01@example.com --confirmed
+```
