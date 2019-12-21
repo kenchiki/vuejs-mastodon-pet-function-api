@@ -5,14 +5,14 @@ import axios from 'axios'
 @Module({ name: 'Account', namespaced: true, stateFactory: true })
 export default class Account extends VuexModule {
   public error: Error | null = null
-  public localStorage: Storage = localStorage
-  public sessionStorage: Storage = sessionStorage
-  public token: string | null = null
+  private localStorage: Storage = localStorage
+  private sessionStorage: Storage = sessionStorage
+  private token: string | null = null
+  private clientId: string | null = null
+  private clientSecret: string | null = null
   public streamingUrl: string | null = null
   public instanceName: string | null = null
   public mastodonUrl: string | null = null
-  public clientId: string | null = null
-  public clientSecret: string | null = null
 
   // client、tokenどちらを取得する際も同一のものを指定する必要あり（認証のところで無効と表示されてしまうため）
   static readonly API_SCOPE: string = 'read write';
