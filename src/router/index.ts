@@ -30,6 +30,11 @@ const routes = <Array<RouteConfig>>[
     path: '/messages',
     name: 'messages',
     component: () => import('../views/Messages.vue')
+  },
+  {
+    path: '/logout',
+    name: 'logout',
+    component: () => import('../views/Logout.vue')
   }
 ]
 

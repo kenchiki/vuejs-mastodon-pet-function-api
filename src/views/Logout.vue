@@ -17,17 +17,13 @@ export default {
       router: context.root.$router
     })
 
-    async function redirect () {
-      await account().fetchToken(state.route.query.code as string)
-      await state.router.push({ name: 'home' })
-    }
-
     function account (): Account {
       return getModule(Account, state.store)
     }
 
     onMounted(() => {
-      redirect()
+      account().clearStorage()
+      state.router.push({ name: 'home' })
     })
 
     return {}

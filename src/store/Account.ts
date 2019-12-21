@@ -67,7 +67,7 @@ export default class Account extends VuexModule {
   }
 
   @Action({})
-  setStorage ({ key, value }) {
+  setStorage ({ key, value }: { key: string, value: string }) {
     this.localStorage.setItem(key, value)
     this.restoreFromStorage()
   }
@@ -123,6 +123,12 @@ export default class Account extends VuexModule {
     } catch (error) {
       this.setError(error)
     }
+  }
+
+  @Action({})
+  clearStorage () {
+    this.localStorage.clear()
+    this.restoreFromStorage()
   }
 
   @Action({})
