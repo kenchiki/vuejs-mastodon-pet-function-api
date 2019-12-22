@@ -1,6 +1,6 @@
 <template>
-  <div class="home">
-    <div class="form-group mt-5">
+  <div class="login">
+    <div class="form-group mt-0">
       <label for="mastodon_url" class="col-form-label">Mastodon URL:</label>
       <input type="text" v-model="state.mastodonUrl" class="form-control" id="mastodon_url" placeholder="https://gingadon.com">
     </div>
@@ -40,3 +40,9 @@ export default {
   }
 }
 </script>
+
+<style lang="scss">
+  .login {
+    padding: 30px;
+  }
+</style>

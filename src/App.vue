@@ -1,25 +1,27 @@
 <template>
   <div id="app">
     <div id="wrapper">
-      <div id="header">
-        <div id="header-in">
-          <h1 id="headerLogo">銀河ペット</h1>
-          <nav id="header-nav">
-            <ul class="header-nav__links">
-              <li><router-link to="/" data-toggle="tooltip" title="tooltip test">ホーム</router-link></li>
-              <li><router-link to="/about">このアプリについて</router-link></li>
-              <li v-if="!isLogin()"><router-link to="/login">ログイン</router-link></li>
-              <li v-if="isLogin()"><router-link to="/messages">お手紙</router-link></li>
-              <li v-if="isLogin()"><router-link to="/logout">ログアウト</router-link></li>
-            </ul>
-          </nav>
+      <div id="container-row">
+        <h1 id="header-logo">銀河ペット ver.1.0</h1>
+        <div id="container-col">
+          <header id="header">
+              <nav class="header-nav">
+                <ul class="header-nav__links">
+                  <li v-if="!isLogin()"><router-link to="/login">ログイン</router-link></li>
+                  <li v-if="isLogin()"><router-link to="/messages">お手紙をみる</router-link></li>
+                  <li><router-link to="/about">説明書</router-link></li>
+                  <li v-if="isLogin()"><router-link to="/logout">ログアウト</router-link></li>
+                </ul>
+              </nav>
+          </header>
+          <div id="content">
+            <div v-if="isLogin()">
+              <Chara />
+            </div>
+            <router-view/>
+          </div>
         </div>
-      </div>
-      <div id="container">
-        <div v-if="isLogin()">
-          <Chara />
-        </div>
-        <router-view/>
+        <p id="footer-status">まったりと遊んでいるよ。</p>
       </div>
     </div>
   </div>
