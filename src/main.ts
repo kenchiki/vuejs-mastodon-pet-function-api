@@ -6,6 +6,9 @@ import store from './store'
 import VueCompositionApi from '@vue/composition-api'
 import { provideStore } from '@/storeProvide'
 
+import 'bootstrap'
+import '@/assets/stylesheets/application.scss'
+
 // VueCompositionApiを使う
 Vue.use(VueCompositionApi)
 

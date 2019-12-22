@@ -1,29 +1,37 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>|
-      <span v-if="!isLogin()">
-        <router-link to="/login">Login</router-link> |
-      </span>
-      <span v-if="isLogin()">
-        <router-link to="/messages">Messages</router-link> |
-        <router-link to="/logout">Logout</router-link> |
-      </span>
+    <div id="wrapper">
+      <div id="header">
+        <div id="header-in">
+          <h1 id="headerLogo">銀河ペット</h1>
+          <nav id="header-nav">
+            <ul class="header-nav__links">
+              <li><router-link to="/" data-toggle="tooltip" title="tooltip test">ホーム</router-link></li>
+              <li><router-link to="/about">このアプリについて</router-link></li>
+              <li v-if="!isLogin()"><router-link to="/login">ログイン</router-link></li>
+              <li v-if="isLogin()"><router-link to="/messages">お手紙</router-link></li>
+              <li v-if="isLogin()"><router-link to="/logout">ログアウト</router-link></li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+      <div id="container">
+        <div v-if="isLogin()">
+          <Chara />
+        </div>
+        <router-view/>
+      </div>
     </div>
-    <div v-if="isLogin()">
-      <Chara />
-    </div>
-    <router-view/>
   </div>
 </template>
 
 <script lang="ts">
 import Chara from '@/components/Chara.vue'
 import { getModule } from 'vuex-module-decorators'
-import { reactive, ref, computed, SetupContext } from '@vue/composition-api'
+import { reactive, ref, computed, SetupContext, onMounted } from '@vue/composition-api'
 import Account from '@/store/Account'
 import { UnwrapRef } from '@vue/composition-api/dist/reactivity'
+import $ from 'jquery'
 
 export default {
   components: {
@@ -45,6 +53,10 @@ export default {
 
     account().init()
 
+    onMounted(() => {
+      $('[data-toggle="tooltip"]').tooltip()
+    })
+
     return {
       isLogin
     }
@@ -53,24 +65,4 @@ export default {
 </script>
 
 <style lang="scss">
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-
-#nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
-}
 </style>
