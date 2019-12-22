@@ -1,14 +1,15 @@
 import { Module, VuexModule, Mutation, Action, getModule } from 'vuex-module-decorators'
-import Vue from 'vue'
 import axios from 'axios'
 import Account from '@/store/Account'
+import { useStore } from '@/storeProvide'
 
 @Module({ name: 'Messages', namespaced: true, stateFactory: true })
 export default class Messages extends VuexModule {
   public timeline: Array<Object> | null = null
 
   get account (): Account {
-    return getModule(Account, Vue.prototype.$store)
+    const store: any = useStore()
+    return getModule(Account, store)
   }
 
   @Mutation
