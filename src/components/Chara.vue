@@ -1,6 +1,6 @@
 <template>
   <div class="hello">
-    Chara
+    ここにペットが出てくる予定だよ。
   </div>
 </template>
 

@@ -1,8 +1,8 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import Account from './Account'
-import Letters from './Letters'
-import Friends from './Friends'
+import Letter from './Letter'
+import Friend from './Friend'
 
 Vue.use(Vuex)
 
@@ -15,7 +15,7 @@ export default new Vuex.Store({
   },
   modules: {
     Account,
-    Letters,
-    Friends
+    Letter,
+    Friend
   }
 })

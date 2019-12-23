@@ -20,7 +20,7 @@
 </template>
 
 <script lang="ts">
-import Letters from '@/store/Letters'
+import Letter from '@/store/Letter'
 import { getModule } from 'vuex-module-decorators'
 import { reactive, ref, computed, SetupContext, onMounted } from '@vue/composition-api'
 import { UnwrapRef } from '@vue/composition-api/dist/reactivity'
@@ -59,18 +59,18 @@ export default {
     }
 
     function timeline () {
-      return letters().timeline
+      return letter().timeline
     }
 
-    async function fetchTimeline () {
-      await letters().fetchTimeline()
+    async function fetchLetters () {
+      await letter().fetchLetters()
     }
 
-    function letters (): Letters {
-      return getModule(Letters, state.store)
+    function letter (): Letter {
+      return getModule(Letter, state.store)
     }
 
-    fetchTimeline()
+    fetchLetters()
 
     // returnするのは外部から呼び出すものだけ（privateで呼び出すのは渡さなくていい）
     return {

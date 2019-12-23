@@ -7,7 +7,7 @@
           <label for="to" class="col-form-label">宛先:</label>
           <input type="text" v-model="state.to" class="form-control" id="to" autocomplete="on" list="friends">
           <datalist id="friends">
-            <option v-for="friend in friendsList()" v-bind:key="friend.id">{{ pickToLabel(friend) }}</option>
+            <option v-for="friend in follows()" v-bind:key="friend.id">{{ pickToLabel(friend) }}</option>
           </datalist>
         </div>
 
@@ -26,8 +26,8 @@
 
 <script lang="ts">
 import Account from '@/store/Account'
-import Friends from '@/store/Friends'
-import Letters from '@/store/Letters'
+import Friend from '@/store/Friend'
+import Letter from '@/store/Letter'
 import { getModule } from 'vuex-module-decorators'
 import { reactive, ref, computed, SetupContext, onMounted } from '@vue/composition-api'
 import { UnwrapRef } from '@vue/composition-api/dist/reactivity'
@@ -67,12 +67,12 @@ export default {
       return getModule(Account, state.store)
     }
 
-    function friends (): Friends {
-      return getModule(Friends, state.store)
+    function friend (): Friend {
+      return getModule(Friend, state.store)
     }
 
-    function letters (): Letters {
-      return getModule(Letters, state.store)
+    function letters (): Letter {
+      return getModule(Letter, state.store)
     }
 
     async function write () {
@@ -80,23 +80,23 @@ export default {
       await state.router.push({ name: 'home' })
     }
 
-    function friendsList () {
-      return friends().friends
+    function follows () {
+      return friend().follows
     }
 
-    async function fetchFriends () {
-      await friends().fetchFriends()
+    async function fetchFriendList () {
+      await friend().fetchFollows()
     }
 
     onMounted(() => {
-      fetchFriends()
+      fetchFriendList()
     })
 
     // returnするのは外部から呼び出すものだけ（privateで呼び出すのは渡さなくていい）
     return {
       state,
       write,
-      friendsList,
+      follows,
       pickToLabel
     }
   }

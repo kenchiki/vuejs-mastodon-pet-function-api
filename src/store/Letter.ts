@@ -3,8 +3,8 @@ import axios from 'axios'
 import Account from '@/store/Account'
 import Vue from 'vue'
 
-@Module({ name: 'Letters', namespaced: true, stateFactory: true })
-export default class Letters extends VuexModule {
+@Module({ name: 'Letter', namespaced: true, stateFactory: true })
+export default class Letter extends VuexModule {
   public timeline: Array<Object> = []
   public error: Error | null = null
 
@@ -23,7 +23,7 @@ export default class Letters extends VuexModule {
   }
 
   @Action({})
-  async fetchTimeline () {
+  async fetchLetters () {
     const response = await axios.get(`${this.account.mastodonUrl}/api/v1/conversations`, {
       params: { limit: 10 },
       headers: { 'Authorization': `Bearer ${this.account.token}` }

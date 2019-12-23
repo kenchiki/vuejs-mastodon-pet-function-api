@@ -3,21 +3,21 @@ import axios from 'axios'
 import Account from '@/store/Account'
 import Vue from 'vue'
 
-@Module({ name: 'Friends', namespaced: true, stateFactory: true })
-export default class Friends extends VuexModule {
-  public friends: Array<Object> = []
+@Module({ name: 'Friend', namespaced: true, stateFactory: true })
+export default class Friend extends VuexModule {
+  public follows: Array<Object> = []
 
   get account (): Account {
     return getModule(Account, Vue.prototype.$store)
   }
 
   @Mutation
-  setFriends (friends: Array<Object>) {
-    this.friends = friends
+  setFriends (follows: Array<Object>) {
+    this.follows = follows
   }
 
   @Action({})
-  async fetchFriends () {
+  async fetchFollows () {
     const response = await axios.get(`${this.account.mastodonUrl}/api/v1/accounts/${this.account.accountInfo.id}/followers`, {
       params: { limit: 200 },
       headers: { 'Authorization': `Bearer ${this.account.token}` }
