@@ -59,14 +59,14 @@ export default {
     }
 
     function timeline () {
-      return messages().timeline || []
+      return letters().timeline
     }
 
     async function fetchTimeline () {
-      await messages().fetchTimeline()
+      await letters().fetchTimeline()
     }
 
-    function messages (): Letters {
+    function letters (): Letters {
       return getModule(Letters, state.store)
     }
 

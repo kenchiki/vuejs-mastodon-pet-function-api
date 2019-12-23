@@ -1,0 +1,110 @@
+<template>
+  <div class="login">
+    <div class="modal">
+      <div class="modal__header">お手紙をかく<router-link to="/">×</router-link></div>
+      <div class="modal__in">
+        <div class="form-group mt-0">
+          <label for="to" class="col-form-label">宛先:</label>
+          <input type="text" v-model="state.to" class="form-control" id="to" autocomplete="on" list="friends">
+          <datalist id="friends">
+            <option v-for="friend in friendsList()" v-bind:key="friend.id">{{ pickToLabel(friend) }}</option>
+          </datalist>
+        </div>
+
+        <div class="form-group mt-0">
+          <label for="body" class="col-form-label">お手紙の内容:</label>
+          <textarea v-model="state.body" class="form-control" id="body" rows="5"></textarea>
+        </div>
+
+        <div class="form-group">
+          <input type="button" value="送る" v-on:click="write" class="form-control btn btn-danger">
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script lang="ts">
+import Account from '@/store/Account'
+import Friends from '@/store/Friends'
+import Letters from '@/store/Letters'
+import { getModule } from 'vuex-module-decorators'
+import { reactive, ref, computed, SetupContext, onMounted } from '@vue/composition-api'
+import { UnwrapRef } from '@vue/composition-api/dist/reactivity'
+
+interface FriendInfo {
+  // eslint-disable-next-line camelcase
+  display_name: string;
+  username: string;
+  url: string;
+}
+
+export default {
+  setup (props: {}, context: SetupContext) {
+    const state: UnwrapRef<any> = reactive({
+      to: '',
+      body: '',
+      store: context.root.$store,
+      router: context.root.$router
+    })
+
+    function pickToLabel (friend: FriendInfo): string {
+      const name = friend.display_name !== '' ? friend.display_name : friend.username
+      const url = new URL(friend.url)
+      return `${name}<@${friend.username}@${url.host}>`
+    }
+
+    function pickTo (toLabel: string): string {
+      const to: Array<string> | null = toLabel.match(/<@([^@]+)@([^@]+)>/)
+      if (to === null) return ''
+
+      const accountInfo = account().accountInfo
+      const accountHost = new URL(accountInfo.url).host
+      return accountHost === to[2] ? `@${to[1]}` : `@${to[1]}@${to[2]}`
+    }
+
+    function account (): Account {
+      return getModule(Account, state.store)
+    }
+
+    function friends (): Friends {
+      return getModule(Friends, state.store)
+    }
+
+    function letters (): Letters {
+      return getModule(Letters, state.store)
+    }
+
+    async function write () {
+      await letters().create({ to: pickTo(state.to), body: state.body })
+      await state.router.push({ name: 'home' })
+    }
+
+    function friendsList () {
+      return friends().friends
+    }
+
+    async function fetchFriends () {
+      await friends().fetchFriends()
+    }
+
+    onMounted(() => {
+      fetchFriends()
+    })
+
+    // returnするのは外部から呼び出すものだけ（privateで呼び出すのは渡さなくていい）
+    return {
+      state,
+      write,
+      friendsList,
+      pickToLabel
+    }
+  }
+}
+</script>
+
+<style lang="scss">
+  .login {
+    padding: 30px;
+  }
+</style>

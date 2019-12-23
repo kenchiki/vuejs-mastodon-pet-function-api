@@ -35,6 +35,11 @@ const routes = <Array<RouteConfig>>[
     path: '/logout',
     name: 'logout',
     component: () => import('../views/Logout.vue')
+  },
+  {
+    path: '/write_letter',
+    name: 'write_letter',
+    component: () => import('../views/WriteLetter.vue')
   }
 ]
 

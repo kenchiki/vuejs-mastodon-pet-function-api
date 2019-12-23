@@ -1,12 +1,17 @@
 <template>
   <div class="login">
-    <div class="form-group mt-0">
-      <label for="mastodon_url" class="col-form-label">Mastodon URL:</label>
-      <input type="text" v-model="state.mastodonUrl" class="form-control" id="mastodon_url" placeholder="https://gingadon.com">
-    </div>
+    <div class="modal">
+      <div class="modal__header">ログイン<router-link to="/">×</router-link></div>
+      <div class="modal__in">
+        <div class="form-group mt-0">
+          <label for="mastodon_url" class="col-form-label">マストドンのURLを入力してログインしてね:</label>
+          <input type="text" v-model="state.mastodonUrl" class="form-control" id="mastodon_url" placeholder="https://gingadon.com">
+        </div>
 
-    <div class="form-group">
-      <input type="button" value="ログイン" v-on:click="login" class="form-control btn btn-danger">
+        <div class="form-group">
+          <input type="button" value="ログイン" v-on:click="login" class="form-control btn btn-danger">
+        </div>
+      </div>
     </div>
   </div>
 </template>

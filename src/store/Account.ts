@@ -2,6 +2,11 @@ import { Module, VuexModule, Mutation, Action } from 'vuex-module-decorators'
 import qs from 'qs'
 import axios from 'axios'
 
+interface AccountInfo {
+  id: string;
+  url: string;
+}
+
 @Module({ name: 'Account', namespaced: true, stateFactory: true })
 export default class Account extends VuexModule {
   public error: Error | null = null
@@ -10,9 +15,11 @@ export default class Account extends VuexModule {
   private clientId: string | null = null
   private clientSecret: string | null = null
   public token: string | null = null
-  public streamingUrl: string | null = null
-  public instanceName: string | null = null
   public mastodonUrl: string | null = null
+  // title, urls.streaming_api
+  public instance: object | null = null
+  // display_name, id
+  public account: object | null = null
 
   // client、tokenどちらを取得する際も同一のものを指定する必要あり（認証のところで無効と表示されてしまうため）
   static readonly API_SCOPE: string = 'read write';
@@ -20,6 +27,10 @@ export default class Account extends VuexModule {
 
   get isLogin (): boolean {
     return this.token !== null
+  }
+
+  get accountInfo (): AccountInfo {
+    return this.account as AccountInfo
   }
 
   @Mutation
@@ -30,11 +41,11 @@ export default class Account extends VuexModule {
   @Mutation
   restoreFromStorage () {
     this.token = this.localStorage.getItem('token')!
-    this.streamingUrl = this.localStorage.getItem('streaming_url')!
-    this.instanceName = this.localStorage.getItem('instance_name')!
     this.mastodonUrl = this.localStorage.getItem('mastodon_url')!
     this.clientId = this.localStorage.getItem('client_id')!
     this.clientSecret = this.localStorage.getItem('client_secret')!
+    this.instance = JSON.parse(this.localStorage.getItem('instance')!)
+    this.account = JSON.parse(this.localStorage.getItem('account')!)
   }
 
   @Action({})
@@ -108,6 +119,7 @@ export default class Account extends VuexModule {
     }
 
     await this.fetchInstance()
+    await this.fetchAccount()
   }
 
   // サーバー情報取得
@@ -117,8 +129,21 @@ export default class Account extends VuexModule {
       const response = await axios.get(`${this.mastodonUrl}/api/v1/instance`, {
         headers: { Authorization: `Bearer ${this.token}` }
       })
-      this.setStorage({ key: 'streaming_url', value: response.data.urls.streaming_api })
-      this.setStorage({ key: 'instance_name', value: response.data.title })
+      this.setStorage({ key: 'instance', value: JSON.stringify(response.data) })
+      this.setError(null)
+    } catch (error) {
+      this.setError(error)
+    }
+  }
+
+  // アカウント情報取得
+  @Action({})
+  async fetchAccount () {
+    try {
+      const response = await axios.get(`${this.mastodonUrl}/api/v1/accounts/verify_credentials`, {
+        headers: { Authorization: `Bearer ${this.token}` }
+      })
+      this.setStorage({ key: 'account', value: JSON.stringify(response.data) })
       this.setError(null)
     } catch (error) {
       this.setError(error)

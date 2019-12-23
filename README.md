@@ -36,6 +36,7 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 # mastodonのAPI
 - [ローカル、ホームなど取得](https://docs.joinmastodon.org/methods/timelines)
 - [ダイレクトメッセージ](https://docs.joinmastodon.org/methods/timelines/conversations)
+- [アカウント情報、フォロワー情報](https://docs.joinmastodon.org/methods/accounts)
 
 # mastodonでテスト用ユーザ追加
 - mastodonのフォルダに移動して下記。（パスワードは作成後表示されるのでメモる）
