@@ -20,7 +20,7 @@
 </template>
 
 <script lang="ts">
-import Messages from '@/store/Messages'
+import Letters from '@/store/Letters'
 import { getModule } from 'vuex-module-decorators'
 import { reactive, ref, computed, SetupContext, onMounted } from '@vue/composition-api'
 import { UnwrapRef } from '@vue/composition-api/dist/reactivity'
@@ -66,8 +66,8 @@ export default {
       await messages().fetchTimeline()
     }
 
-    function messages (): Messages {
-      return getModule(Messages, state.store)
+    function messages (): Letters {
+      return getModule(Letters, state.store)
     }
 
     fetchTimeline()

@@ -3,8 +3,8 @@ import axios from 'axios'
 import Account from '@/store/Account'
 import { useStore } from '@/storeProvide'
 
-@Module({ name: 'Messages', namespaced: true, stateFactory: true })
-export default class Messages extends VuexModule {
+@Module({ name: 'Letters', namespaced: true, stateFactory: true })
+export default class Letters extends VuexModule {
   public timeline: Array<Object> | null = null
 
   get account (): Account {

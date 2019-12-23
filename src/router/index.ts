@@ -27,9 +27,9 @@ const routes = <Array<RouteConfig>>[
     component: () => import('../views/OauthCallback.vue')
   },
   {
-    path: '/messages',
-    name: 'messages',
-    component: () => import('../views/Messages.vue')
+    path: '/letters',
+    name: 'letters',
+    component: () => import('../views/Letters.vue')
   },
   {
     path: '/logout',
