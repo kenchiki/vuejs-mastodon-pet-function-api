@@ -2,14 +2,31 @@ import { Module, VuexModule, Mutation, Action, getModule } from 'vuex-module-dec
 import axios from 'axios'
 import Account from '@/store/Account'
 import Vue from 'vue'
+import { AccountInfo, TootInfo } from '@/interface'
 
 @Module({ name: 'Letter', namespaced: true, stateFactory: true })
 export default class Letter extends VuexModule {
-  public timeline: Array<Object> = []
+  public list: Array<TootInfo> = []
   public error: Error | null = null
 
   get account (): Account {
     return getModule(Account, Vue.prototype.$store)
+  }
+
+  get receivedLetters (): Array<TootInfo> {
+    return this.list.filter((letter: TootInfo) => {
+      return letter.last_status.account.id !== this.myAccountId
+    })
+  }
+
+  get sentLetters (): Array<Object> {
+    return this.list.filter((letter: TootInfo) => {
+      return letter.last_status.account.id === this.myAccountId
+    })
+  }
+
+  get myAccountId (): string {
+    return (this.account.account as AccountInfo).id
   }
 
   @Mutation
@@ -18,8 +35,8 @@ export default class Letter extends VuexModule {
   }
 
   @Mutation
-  setTimeline (timeline: Array<Object>) {
-    this.timeline = timeline
+  setTimeline (list: Array<TootInfo>) {
+    this.list = list
   }
 
   @Action({})

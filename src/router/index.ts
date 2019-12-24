@@ -27,9 +27,14 @@ const routes = <Array<RouteConfig>>[
     component: () => import('../views/OauthCallback.vue')
   },
   {
-    path: '/letters',
-    name: 'letters',
-    component: () => import('../views/Letters.vue')
+    path: '/sent_letters',
+    name: 'sent_letters',
+    component: () => import('../views/SentLetters.vue')
+  },
+  {
+    path: '/received_letters',
+    name: 'received_letters',
+    component: () => import('../views/ReceivedLetters.vue')
   },
   {
     path: '/logout',

@@ -1,11 +1,7 @@
 import { Module, VuexModule, Mutation, Action } from 'vuex-module-decorators'
 import qs from 'qs'
 import axios from 'axios'
-
-interface AccountInfo {
-  id: string;
-  url: string;
-}
+import { AccountInfo } from '@/interface'
 
 @Module({ name: 'Account', namespaced: true, stateFactory: true })
 export default class Account extends VuexModule {
@@ -19,7 +15,7 @@ export default class Account extends VuexModule {
   // title, urls.streaming_api
   public instance: object | null = null
   // display_name, id
-  public account: object | null = null
+  public account: AccountInfo | null = null
 
   // client、tokenどちらを取得する際も同一のものを指定する必要あり（認証のところで無効と表示されてしまうため）
   static readonly API_SCOPE: string = 'read write';
@@ -27,10 +23,6 @@ export default class Account extends VuexModule {
 
   get isLogin (): boolean {
     return this.token !== null
-  }
-
-  get accountInfo (): AccountInfo {
-    return this.account as AccountInfo
   }
 
   @Mutation

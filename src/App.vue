@@ -9,7 +9,8 @@
                 <ul class="header-nav__links">
                   <li v-if="!isLogin()"><router-link to="/login">ログイン</router-link></li>
                   <li v-if="isLogin()"><router-link to="/write_letter">お手紙をかく</router-link></li>
-                  <li v-if="isLogin()"><router-link to="/letters">届いたお手紙</router-link></li>
+                  <li v-if="isLogin()"><router-link to="/received_letters">届いたお手紙</router-link></li>
+                  <li v-if="isLogin()"><router-link to="/sent_letters">送ったお手紙</router-link></li>
                   <li><router-link to="/about">説明書</router-link></li>
                   <li v-if="isLogin()"><router-link to="/logout">ログアウト</router-link></li>
                 </ul>

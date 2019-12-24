@@ -31,6 +31,7 @@ import Letter from '@/store/Letter'
 import { getModule } from 'vuex-module-decorators'
 import { reactive, ref, computed, SetupContext, onMounted } from '@vue/composition-api'
 import { UnwrapRef } from '@vue/composition-api/dist/reactivity'
+import { AccountInfo } from '@/interface'
 
 interface FriendInfo {
   // eslint-disable-next-line camelcase
@@ -58,7 +59,7 @@ export default {
       const to: Array<string> | null = toLabel.match(/<@([^@]+)@([^@]+)>/)
       if (to === null) return ''
 
-      const accountInfo = account().accountInfo
+      const accountInfo: AccountInfo = account().account!
       const accountHost = new URL(accountInfo.url).host
       return accountHost === to[2] ? `@${to[1]}` : `@${to[1]}@${to[2]}`
     }

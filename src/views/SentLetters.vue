@@ -1,14 +1,14 @@
 <template>
   <div class="messages">
-    <div class="modal" v-if="timeline().length">
+    <div class="modal" v-if="letters().length">
       <div class="modal__header">みんなからのお手紙<router-link to="/">×</router-link></div>
       <div class="modal__in">
         <div class="letters">
           <ul class="letters__items">
-            <li v-for="message in timeline()" v-bind:key="message.id" class="letters__item">
+            <li v-for="message in letters()" v-bind:key="message.id" class="letters__item">
               <div class="letters__letter">
+                <p class="letters__message">{{ pickToNames(message) }}</p>
                 <p class="letters__message"><span v-html="pickMessage(message)"></span></p>
-                <p class="letters__friend">{{ pickFriendName(message) }} さんより</p>
                 <p class="letters__friend">{{ pickCreatedAt(message) }}</p>
               </div>
             </li>
@@ -24,6 +24,7 @@ import Letter from '@/store/Letter'
 import { getModule } from 'vuex-module-decorators'
 import { reactive, ref, computed, SetupContext, onMounted } from '@vue/composition-api'
 import { UnwrapRef } from '@vue/composition-api/dist/reactivity'
+import { AccountInfo, TootInfo } from '@/interface'
 
 export default {
   setup (props: {}, context: SetupContext) {
@@ -43,23 +44,20 @@ export default {
       return content
     }
 
-    // eslint-disable-next-line camelcase
-    function pickFriendName (message: { last_status: { account: object; } }): string {
-      // eslint-disable-next-line camelcase
-      const account: { display_name?: string; username?: string; } = message.last_status.account
-      return account.display_name !== '' ? account.display_name! : account.username!
+    function pickToNames (message: TootInfo): string {
+      return message.accounts.reduce((saveVal: string, account: AccountInfo) => {
+        const name = account.display_name !== '' ? account.display_name : account.username
+        return `${name}さんへ ${saveVal}`
+      }, '')
     }
 
-    // eslint-disable-next-line camelcase
-    function pickCreatedAt (message: { last_status: { created_at: string; }; }): string {
-      // eslint-disable-next-line camelcase
-      const lastStatus: { created_at: string; } = message.last_status
-      const d = new Date(lastStatus.created_at!)
+    function pickCreatedAt (message: TootInfo): string {
+      const d = new Date(message.last_status.created_at)
       return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${d.getMinutes()}`
     }
 
-    function timeline () {
-      return letter().timeline
+    function letters () {
+      return letter().sentLetters
     }
 
     async function fetchLetters () {
@@ -75,9 +73,9 @@ export default {
     // returnするのは外部から呼び出すものだけ（privateで呼び出すのは渡さなくていい）
     return {
       state,
-      timeline,
+      letters,
       pickMessage,
-      pickFriendName,
+      pickToNames,
       pickCreatedAt
     }
   }
