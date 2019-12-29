@@ -22,9 +22,9 @@ export default createComponent({
     })
     let petPos: Point = { x: 100, y: 200 }
     const mousePos: Point = { x: 0, y: 0 }
-    const RADIUS: number = 10
-    const MOVE: number = 3
-    let linesWithNormal: Array<Line> = HitTestLines.lines()
+    const PET_RADIUS: number = 10
+    const PET_MOVE: number = 3
+    let linesWithNormal: Array<Line> = HitTestLines.linesWithNormal()
 
     // 当たり判定の視覚化
     function drawLines () {
@@ -41,14 +41,14 @@ export default createComponent({
       const purposeNor: Point = Vector.normalize(purpose)
 
       // MOVE分ペット移動
-      if (Vector.pLength(purpose) < MOVE) return
-      purpose = Vector.scale(purposeNor, MOVE)
+      if (Vector.pLength(purpose) < PET_MOVE) return
+      purpose = Vector.scale(purposeNor, PET_MOVE)
       petPos = Vector.add(petPos, purpose)
 
       // 交差していたら線より手前に戻す
       linesWithNormal.forEach(function (line) {
         // ボールの中心から線の法線とは逆向きの半径のベクトル
-        const rad = Vector.scale(line.normal!, -RADIUS) // normalは必須じゃないので!で値があることを示してあげる必要がある
+        const rad = Vector.scale(line.normal!, -PET_RADIUS) // normalは必須じゃないので!で値があることを示してあげる必要がある
 
         const t = Vector.t(line, petPos, rad)
         // 無限線を交差してる
@@ -67,15 +67,15 @@ export default createComponent({
           // 内積 > 0の場合、ベクトルとベクトルの間は90°以内。内積 < 0の場合、ベクトルとベクトルは90°より開いている。つまり、内積 < 0の場合は、お互い外向きの方向になっている。
           if (Vector.inner(bc, ac) <= 0) {
             // 上にいるのでボールの半径の法線の分戻す（法線は時計回り90°回転させた方向のベクトルなので戻る方向を向いている）
-            const re = Vector.scale(line.normal!, RADIUS)
+            const re = Vector.scale(line.normal!, PET_RADIUS)
             petPos = Vector.add(re, c)
           }
         }
       })
 
       const pet = document.getElementById('pet') as HTMLElement
-      pet.style.left = `${petPos.x - RADIUS}px`
-      pet.style.top = `${petPos.y - RADIUS}px`
+      pet.style.left = `${petPos.x - PET_RADIUS}px`
+      pet.style.top = `${petPos.y - PET_RADIUS}px`
     }
 
     function interval (): void {
@@ -89,9 +89,6 @@ export default createComponent({
 
       // マウスの位置を取得
       MouseListener.listenMousePos(document.getElementById('house')!, [document.getElementById('pet')!], mousePos)
-
-      // 法線を含むラインを取得
-      Vector.setLinesWithNormal(linesWithNormal)
 
       window.setInterval(interval, 20)
     })

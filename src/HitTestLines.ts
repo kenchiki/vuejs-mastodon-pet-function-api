@@ -1,7 +1,8 @@
-import { Line, Point } from '@/Vector'
+import Vector, { Line, Point } from '@/Vector'
 
 export default class HitTestLines {
-  static lines () : Array<Line> {
+  // 法線を含むラインを取得
+  static linesWithNormal () : Array<Line> {
     let lines: Array<Line> = []
     const house: Array<Line> = [
       {
@@ -43,6 +44,7 @@ export default class HitTestLines {
 
     lines = lines.concat(house)
     lines = lines.concat(desk)
+    Vector.setLinesWithNormal(lines)
     return lines
   }
 }
