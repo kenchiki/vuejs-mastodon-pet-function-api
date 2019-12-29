@@ -18,7 +18,7 @@
           </header>
           <div id="content">
             <div v-if="isLogin()">
-              <Chara />
+              <Pet />
             </div>
             <router-view/>
           </div>
@@ -30,7 +30,7 @@
 </template>
 
 <script lang="ts">
-import Chara from '@/components/Chara.vue'
+import Pet from '@/components/Pet.vue'
 import { getModule } from 'vuex-module-decorators'
 import { reactive, ref, computed, SetupContext, onMounted } from '@vue/composition-api'
 import Account from '@/store/Account'
@@ -39,7 +39,7 @@ import $ from 'jquery'
 
 export default {
   components: {
-    Chara
+    Pet
   },
   setup (props: {}, context: SetupContext) {
     const state: UnwrapRef<any> = reactive({

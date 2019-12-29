@@ -69,7 +69,9 @@ export default {
       return getModule(Letter, state.store)
     }
 
-    fetchLetters()
+    onMounted(() => {
+      fetchLetters()
+    })
 
     // returnするのは外部から呼び出すものだけ（privateで呼び出すのは渡さなくていい）
     return {
