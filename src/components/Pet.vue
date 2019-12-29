@@ -11,6 +11,9 @@
 import { createComponent, reactive, ref, computed, SetupContext, onMounted } from '@vue/composition-api'
 import { UnwrapRef } from '@vue/composition-api/dist/reactivity'
 import Vector, { Point, Line } from '@/Vector'
+import LinesDrawer from '@/LinesDrawer'
+import MouseListener from '@/MouseListener'
+import HitTestLines from '@/HitTestLines'
 
 export default createComponent({
   setup (props: {}, context: SetupContext) {
@@ -21,102 +24,18 @@ export default createComponent({
     const mousePos: Point = { x: 0, y: 0 }
     const RADIUS: number = 10
     const MOVE: number = 3
-    let linesWithNormal: Array<Line> = []
+    let linesWithNormal: Array<Line> = HitTestLines.lines()
 
-    // 当たり判定
-    function lines (): Array<Line> {
-      let lines: Array<Line> = []
-      const house: Array<Line> = [
-        {
-          p1: { x: 250, y: 50 },
-          p2: { x: 500, y: 200 }
-        },
-        {
-          p1: { x: 500, y: 200 },
-          p2: { x: 250, y: 350 }
-        },
-        {
-          p1: { x: 250, y: 350 },
-          p2: { x: 0, y: 200 }
-        },
-        {
-          p1: { x: 0, y: 200 },
-          p2: { x: 250, y: 50 }
-        }
-      ]
-
-      const desk: Array<Line> = [
-        {
-          p1: { x: 300, y: 200 },
-          p2: { x: 250, y: 170 }
-        },
-        {
-          p1: { x: 250, y: 170 },
-          p2: { x: 200, y: 200 }
-        },
-        {
-          p1: { x: 200, y: 200 },
-          p2: { x: 250, y: 230 }
-        },
-        {
-          p1: { x: 250, y: 230 },
-          p2: { x: 300, y: 200 }
-        }
-      ]
-
-      lines = lines.concat(house)
-      lines = lines.concat(desk)
-      return lines
-    }
-
-    // 当たり判定を視覚化
-    function drawHitTest () {
+    // 当たり判定の視覚化
+    function drawLines () {
       const canvas = document.getElementById('hitTest') as HTMLCanvasElement
       // CSSだけでなく横幅、高さ指定しないと解像度がおかしくなる
       canvas.width = 500
       canvas.height = 400
-      lines().forEach(function (line) {
-        drawLine(line)
-      })
+      LinesDrawer.drawHitTest(canvas, linesWithNormal)
     }
 
-    // キャンバスに線を引く
-    function drawLine ({ p1, p2 }: {p1: Point, p2: Point}) {
-      const canvas = document.getElementById('hitTest') as HTMLCanvasElement
-      const cc = canvas.getContext('2d') as CanvasRenderingContext2D
-
-      cc.beginPath()
-      cc.lineWidth = 2 // 線の太さを指定
-      cc.lineTo(p1.x, p1.y) // 開始位置の指定
-      cc.lineTo(p2.x, p2.y) // 終了位置の指定
-      cc.stroke()
-    }
-
-    // マウスの位置を取得
-    function listenMousePos () {
-      const house = document.getElementById('house')!
-      house.addEventListener('mousemove', function (evt) {
-        mousePos.x = evt.offsetX
-        mousePos.y = evt.offsetY
-      })
-
-      // マウスの上にペットのアイコンがくるとマウスの位置が狂うので無効化する
-      const pet = document.getElementById('pet')!
-      pet.addEventListener('mousemove', function (evt) {
-        evt.stopPropagation()
-      })
-    }
-
-    // 法線を作る
-    function addNormal (): Array<Line> {
-      const normalLines = lines()
-      normalLines.forEach(function (line) {
-        line.normal = Vector.normal(line)
-      })
-      return normalLines
-    }
-
-    function interval (): void {
+    function petMove () {
       // 移動すべきベクトル
       let purpose: Point = { x: mousePos.x - petPos.x, y: mousePos.y - petPos.y }
       const purposeNor: Point = Vector.normalize(purpose)
@@ -159,15 +78,20 @@ export default createComponent({
       pet.style.top = `${petPos.y - RADIUS}px`
     }
 
+    function interval (): void {
+      // TODO: ペットの状態によって分岐を変えて動きを変える
+      petMove()
+    }
+
     onMounted(() => {
       // 当たり判定を視覚化
-      drawHitTest()
+      drawLines()
 
       // マウスの位置を取得
-      listenMousePos()
+      MouseListener.listenMousePos(document.getElementById('house')!, [document.getElementById('pet')!], mousePos)
 
       // 法線を含むラインを取得
-      linesWithNormal = addNormal()
+      Vector.setLinesWithNormal(linesWithNormal)
 
       window.setInterval(interval, 20)
     })

@@ -79,4 +79,11 @@ export default class Vector {
     const normal: Point = line.normal!
     return -(normal.x * (mousePos.x - line.p1.x) + normal.y * (mousePos.y - line.p1.y)) / (normal.x * radius.x + normal.y * radius.y)
   }
+
+  // 法線を作る
+  static setLinesWithNormal (lines: Array<Line>) {
+    lines.forEach(line => {
+      line.normal = this.normal(line)
+    })
+  }
 }
