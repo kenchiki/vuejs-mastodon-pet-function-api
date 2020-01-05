@@ -25,6 +25,7 @@ import { getModule } from 'vuex-module-decorators'
 import { reactive, ref, computed, SetupContext, onMounted } from '@vue/composition-api'
 import { UnwrapRef } from '@vue/composition-api/dist/reactivity'
 import { AccountInfo, TootInfo } from '@/interface'
+import Account from '@/store/Account'
 
 export default {
   setup (props: {}, context: SetupContext) {
@@ -46,7 +47,7 @@ export default {
 
     function pickToNames (message: TootInfo): string {
       return message.accounts.reduce((saveVal: string, account: AccountInfo) => {
-        const name = account.display_name !== '' ? account.display_name : account.username
+        const name = Account.pickName(account)
         return `${name}さんへ ${saveVal}`
       }, '')
     }

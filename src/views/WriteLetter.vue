@@ -33,13 +33,6 @@ import { reactive, ref, computed, SetupContext, onMounted } from '@vue/compositi
 import { UnwrapRef } from '@vue/composition-api/dist/reactivity'
 import { AccountInfo } from '@/interface'
 
-interface FriendInfo {
-  // eslint-disable-next-line camelcase
-  display_name: string;
-  username: string;
-  url: string;
-}
-
 export default {
   setup (props: {}, context: SetupContext) {
     const state: UnwrapRef<any> = reactive({
@@ -49,8 +42,8 @@ export default {
       router: context.root.$router
     })
 
-    function pickToLabel (friend: FriendInfo): string {
-      const name = friend.display_name !== '' ? friend.display_name : friend.username
+    function pickToLabel (friend: AccountInfo): string {
+      const name = Account.pickName(friend)
       const url = new URL(friend.url)
       return `${name}<@${friend.username}@${url.host}>`
     }
@@ -59,8 +52,7 @@ export default {
       const to: Array<string> | null = toLabel.match(/<@([^@]+)@([^@]+)>/)
       if (to === null) return ''
 
-      const accountInfo: AccountInfo = account().account!
-      const accountHost = new URL(accountInfo.url).host
+      const accountHost = new URL(account().url).host
       return accountHost === to[2] ? `@${to[1]}` : `@${to[1]}@${to[2]}`
     }
 

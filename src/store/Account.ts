@@ -21,8 +21,11 @@ export default class Account extends VuexModule {
   static readonly API_SCOPE: string = 'read write';
   static readonly APP_NAME: string = '銀河ペット';
 
-  get isLogin (): boolean {
-    return this.token !== null
+  get isLogin (): boolean { return this.token !== null }
+  get avatar (): string { return this.account!.avatar }
+  get url (): string { return this.account!.url }
+  get name (): string {
+    return this.account!.display_name !== '' ? this.account!.display_name : this.account!.username
   }
 
   @Mutation
@@ -156,5 +159,9 @@ export default class Account extends VuexModule {
   static REDIRECT_URI (): string {
     if (process.env.NODE_ENV === 'production') return `https://${process.env.VUE_APP_DOMAIN}`
     return `http://${process.env.VUE_APP_DOMAIN}:${process.env.VUE_APP_PORT}/oauth_callback`
+  }
+
+  static pickName (account: AccountInfo): string {
+    return account.display_name !== '' ? account.display_name : account.username
   }
 }

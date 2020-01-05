@@ -15,4 +15,5 @@ export interface AccountInfo {
   // eslint-disable-next-line camelcase
   display_name: string;
   username: string;
+  avatar: string;
 }
