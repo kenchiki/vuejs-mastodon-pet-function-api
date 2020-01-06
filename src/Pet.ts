@@ -32,6 +32,7 @@ export default class Pet {
   private purposePos: Point = { x: 0, y: 0 };
   private readonly hitTestLines: Array<Line> = HitTestLines.linesWithNormal();
   private context: SetupContext;
+  private touchDisabled: boolean = false;
 
   constructor (context: SetupContext) {
     this.context = context
@@ -71,10 +72,11 @@ export default class Pet {
       {
         action: PetStatus.Hit,
         message: `${this.account().name}は怒っています！`,
-        frame: 40,
+        frame: 60,
         kind: ActionKind.All,
         init: this.hitInit,
-        after: this.setRandomFreeByFrame
+        after: this.setRandomFreeByFrame,
+        finish: this.hitFinish
       }
     ]
   }
@@ -166,6 +168,12 @@ export default class Pet {
   // 叩くアイコン表示
   private hitInit () {
     this.element().classList.add('hit')
+    this.touchDisabled = true
+  }
+
+  // 叩く終了
+  private hitFinish () {
+    this.touchDisabled = false
   }
 
   // 重みから次のランダムの動きを取得
@@ -194,7 +202,7 @@ export default class Pet {
   // なでる
   private listenerStroke () {
     this.element().addEventListener('mousemove', (evt) => {
-      this.setFree(this.findAction(PetStatus.Stroke))
+      if (!this.touchDisabled) this.setFree(this.findAction(PetStatus.Stroke))
     })
   }
 
