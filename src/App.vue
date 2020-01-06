@@ -18,12 +18,12 @@
           </header>
           <div id="content">
             <div v-if="isLogin()">
-              <PetComponent />
+              <PetComponent :message="state.message" @setMessage="setMessage" />
             </div>
             <router-view/>
           </div>
         </div>
-        <p id="footer-status">まったりと遊んでいるよ。</p>
+        <p id="footer-status"><span v-html="state.message"></span></p>
       </div>
     </div>
   </div>
@@ -44,8 +44,13 @@ export default {
   setup (props: {}, context: SetupContext) {
     const state: UnwrapRef<any> = reactive({
       mastodonUrl: process.env.VUE_APP_MASTODON_ORIGIN,
-      store: context.root.$store
+      store: context.root.$store,
+      message: ''
     })
+
+    function setMessage (message: string) {
+      state.message = message
+    }
 
     function isLogin (): boolean {
       return account().isLogin
@@ -62,7 +67,9 @@ export default {
     })
 
     return {
-      isLogin
+      state,
+      isLogin,
+      setMessage
     }
   }
 }

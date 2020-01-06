@@ -1,6 +1,7 @@
 import { Point } from '@/Vector'
 
 export default class MouseListener {
+  // MouseListener.listenMousePos(document.getElementById('house')!, [document.getElementById('pet')!], mousePos)
   static listenMousePos (parent: HTMLElement, excludeChildren: Array<HTMLElement>, mousePos: Point) {
     parent.addEventListener('mousemove', function (evt) {
       mousePos.x = evt.offsetX
