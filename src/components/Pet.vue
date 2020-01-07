@@ -1,9 +1,12 @@
 <template>
   <div id="house">
+    <div id="background"></div>
     <canvas id="hitTest">
       図形を表示するには、canvasタグをサポートしたブラウザが必要です。
     </canvas>
+    <div id="door"></div>
     <div id="pet"></div>
+    <div id="post"></div>
   </div>
 </template>
 
@@ -13,9 +16,9 @@ import { UnwrapRef } from '@vue/composition-api/dist/reactivity'
 import Vector, { Point, Line } from '@/Vector'
 import LinesDrawer from '@/LinesDrawer'
 import HitTestLines from '@/HitTestLines'
+import Pet from '@/store/Pet'
 import { getModule } from 'vuex-module-decorators'
-import Pet from '@/Pet'
-import Account from '@/store/Account'
+import MouseListener from '@/MouseListener'
 
 export default createComponent({
   setup (props: {}, context: SetupContext) {
@@ -24,7 +27,7 @@ export default createComponent({
     })
     enum Statuses { Free, Delivery }
     let curStatus: Statuses = Statuses.Free
-    const pet: Pet = new Pet(context)
+    const mousePos: Point = { x: 0, y: 0 }
 
     // 当たり判定の視覚化
     function drawLines () {
@@ -36,26 +39,18 @@ export default createComponent({
       LinesDrawer.drawHitTest(canvas, linesWithNormal)
     }
 
-    function delivery () {
-    }
-
-    function interval () {
-      switch (curStatus) {
-        case Statuses.Free:
-          return pet.free()
-        case Statuses.Delivery:
-          return delivery()
-      }
+    function pet (): Pet {
+      return getModule(Pet, state.store)
     }
 
     onMounted(() => {
       // 当たり判定を視覚化
       drawLines()
 
-      // ペットの初期化
-      pet.init()
+      // マウスの位置を取得
+      MouseListener.listenMousePos(document.getElementById('house')!, [document.getElementById('pet')!], mousePos)
 
-      window.setInterval(interval, 20)
+      pet().init()
     })
   }
 })
@@ -71,6 +66,40 @@ export default createComponent({
   #hitTest {
     width: 100%;
     height: 100%;
+  }
+
+  #background {
+    width: 100%;
+    height: 100%;
+    background-size: 100% 100%;
+    background-image: url('../assets/background.png');
+    position: absolute;
+  }
+
+  #post {
+    width: 58px;
+    height: 82px;
+    background-size: 100% 100%;
+    background-image: url('../assets/post_none.png');
+    left: 80px;
+    top: 240px;
+    position: absolute;
+    &.letter {
+      background-image: url('../assets/post_letter.png');
+    }
+  }
+
+  #door {
+    width: 95px;
+    height: 105px;
+    background-size: 100% 100%;
+    background-image: url('../assets/door_close.png');
+    left: 280px;
+    top: 20px;
+    position: absolute;
+    &.open {
+      background-image: url('../assets/door_open.png');
+    }
   }
 
   #pet {

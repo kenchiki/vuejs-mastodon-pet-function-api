@@ -18,13 +18,13 @@
           </header>
           <div id="content">
             <div v-if="isLogin()">
-              <PetComponent :message="state.message" @setMessage="setMessage" />
+              <PetComponent />
             </div>
-            <router-view/>
           </div>
         </div>
-        <p id="footer-status"><span v-html="state.message"></span></p>
+        <p id="footer-status"><span v-html="message()"></span></p>
       </div>
+      <router-view/>
     </div>
   </div>
 </template>
@@ -32,10 +32,12 @@
 <script lang="ts">
 import PetComponent from '@/components/Pet.vue'
 import { getModule } from 'vuex-module-decorators'
-import { reactive, ref, computed, SetupContext, onMounted } from '@vue/composition-api'
+import { reactive, ref, computed, SetupContext, watch, onMounted } from '@vue/composition-api'
 import Account from '@/store/Account'
+import Letter from '@/store/Letter'
+import Pet from '@/store/Pet'
 import { UnwrapRef } from '@vue/composition-api/dist/reactivity'
-import $ from 'jquery'
+import { Status } from '@/interface'
 
 export default {
   components: {
@@ -44,13 +46,8 @@ export default {
   setup (props: {}, context: SetupContext) {
     const state: UnwrapRef<any> = reactive({
       mastodonUrl: process.env.VUE_APP_MASTODON_ORIGIN,
-      store: context.root.$store,
-      message: ''
+      store: context.root.$store
     })
-
-    function setMessage (message: string) {
-      state.message = message
-    }
 
     function isLogin (): boolean {
       return account().isLogin
@@ -60,16 +57,36 @@ export default {
       return getModule(Account, state.store)
     }
 
-    account().init()
+    function pet (): Pet {
+      return getModule(Pet, state.store)
+    }
+
+    function message (): string {
+      return pet().message
+    }
+
+    function status (): Status {
+      return pet().status
+    }
+
+    function letters (): Letter {
+      return getModule(Letter, state.store)
+    }
 
     onMounted(() => {
-      $('[data-toggle="tooltip"]').tooltip()
+      account().init()
+    })
+
+    watch(status, (newVal, oldVal) => {
+      if (oldVal === Status.Delivery && newVal === Status.Free) {
+        letters().send()
+      }
     })
 
     return {
       state,
       isLogin,
-      setMessage
+      message
     }
   }
 }

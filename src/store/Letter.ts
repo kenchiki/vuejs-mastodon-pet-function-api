@@ -1,6 +1,7 @@
 import { Module, VuexModule, Mutation, Action, getModule } from 'vuex-module-decorators'
 import axios from 'axios'
 import Account from '@/store/Account'
+import Pet from '@/store/Pet'
 import Vue from 'vue'
 import { AccountInfo, TootInfo } from '@/interface'
 
@@ -8,9 +9,15 @@ import { AccountInfo, TootInfo } from '@/interface'
 export default class Letter extends VuexModule {
   public list: Array<TootInfo> = []
   public error: Error | null = null
+  private to: string | null = null
+  private body: string | null = null
 
   get account (): Account {
     return getModule(Account, Vue.prototype.$store)
+  }
+
+  get pet (): Pet {
+    return getModule(Pet, Vue.prototype.$store)
   }
 
   get receivedLetters (): Array<TootInfo> {
@@ -27,6 +34,12 @@ export default class Letter extends VuexModule {
 
   get myAccountId (): string {
     return (this.account.account as AccountInfo).id
+  }
+
+  @Mutation
+  setLetter ({ to, body }: {to: string, body: string}) {
+    this.to = to
+    this.body = body
   }
 
   @Mutation
@@ -49,10 +62,10 @@ export default class Letter extends VuexModule {
   }
 
   @Action({})
-  async create ({ to, body }: {to: string, body: string}) {
+  async send () {
     const postParams = {
       visibility: 'direct',
-      status: `${to} ${body}`
+      status: `${this.to} ${this.body}`
     }
 
     try {

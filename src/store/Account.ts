@@ -25,6 +25,7 @@ export default class Account extends VuexModule {
   get avatar (): string { return this.account!.avatar }
   get url (): string { return this.account!.url }
   get name (): string {
+    if (!this.account) return ''
     return this.account!.display_name !== '' ? this.account!.display_name : this.account!.username
   }
 

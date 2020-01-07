@@ -17,3 +17,5 @@ export interface AccountInfo {
   username: string;
   avatar: string;
 }
+
+export enum Status { Free, Delivery }

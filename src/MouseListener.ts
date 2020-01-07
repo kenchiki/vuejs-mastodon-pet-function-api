@@ -6,6 +6,7 @@ export default class MouseListener {
     parent.addEventListener('mousemove', function (evt) {
       mousePos.x = evt.offsetX
       mousePos.y = evt.offsetY
+      console.log(`${mousePos.x}:${mousePos.y}`)
     })
 
     // マウスの上にペットのアイコンがくるとマウスの位置が狂うので無効化する

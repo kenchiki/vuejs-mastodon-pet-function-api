@@ -29,9 +29,10 @@ import Account from '@/store/Account'
 import Friend from '@/store/Friend'
 import Letter from '@/store/Letter'
 import { getModule } from 'vuex-module-decorators'
-import { reactive, ref, computed, SetupContext, onMounted } from '@vue/composition-api'
+import { reactive, ref, computed, SetupContext, watch, onMounted } from '@vue/composition-api'
 import { UnwrapRef } from '@vue/composition-api/dist/reactivity'
 import { AccountInfo } from '@/interface'
+import Pet from '@/store/Pet'
 
 export default {
   setup (props: {}, context: SetupContext) {
@@ -48,14 +49,6 @@ export default {
       return `${name}<@${friend.username}@${url.host}>`
     }
 
-    function pickTo (toLabel: string): string {
-      const to: Array<string> | null = toLabel.match(/<@([^@]+)@([^@]+)>/)
-      if (to === null) return ''
-
-      const accountHost = new URL(account().url).host
-      return accountHost === to[2] ? `@${to[1]}` : `@${to[1]}@${to[2]}`
-    }
-
     function account (): Account {
       return getModule(Account, state.store)
     }
@@ -64,13 +57,26 @@ export default {
       return getModule(Friend, state.store)
     }
 
+    function pet (): Pet {
+      return getModule(Pet, state.store)
+    }
+
     function letters (): Letter {
       return getModule(Letter, state.store)
     }
 
-    async function write () {
-      await letters().create({ to: pickTo(state.to), body: state.body })
-      await state.router.push({ name: 'home' })
+    function write () {
+      letters().setLetter({ to: pickTo(state.to), body: state.body })
+      pet().delivery()
+      state.router.push({ name: 'home' })
+    }
+
+    function pickTo (toLabel: string): string {
+      const to: Array<string> | null = toLabel.match(/<@([^@]+)@([^@]+)>/)
+      if (to === null) return ''
+
+      const accountHost = new URL(account().url).host
+      return accountHost === to[2] ? `@${to[1]}` : `@${to[1]}@${to[2]}`
     }
 
     function follows () {

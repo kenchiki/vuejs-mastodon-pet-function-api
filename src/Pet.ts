@@ -3,17 +3,18 @@ import Account from '@/store/Account'
 import Vue from 'vue'
 import Vector, { Line, Point } from '@/Vector'
 import HitTestLines from '@/HitTestLines'
-import { SetupContext } from '@vue/composition-api'
-enum PetStatus { Move, Sleep, Stroke, Hit }
-enum ActionKind { All, Free }
+import { Status } from '@/interface'
+enum ActionKind { Move, Sleep, Stroke, Hit }
+enum ActionCategory { All, Free }
+enum MoveResult { Move, Hit, Finish }
 
-export interface FreeInfo {
-  action: PetStatus;
+export interface ActionInfo {
+  action: ActionKind;
   weight?: number;
   calcedWeight?: number;
   message: string;
   frame: number;
-  kind: ActionKind;
+  category: ActionCategory;
   init?: Function;
   before?: Function;
   after?: Function;
@@ -26,54 +27,63 @@ export default class Pet {
   static readonly MOVE_DISTANCE: number = 150;
   static readonly RADIUS: number = 30;
   private frame: number = 0;
-  private actions: Array<FreeInfo> = this.factoryFrees();
-  private frees: Array<FreeInfo> = this.calcedFrees();
-  public freeStatus: FreeInfo = this.findAction(PetStatus.Move);
+  private actions: Array<ActionInfo> = this.factoryActions();
+  private frees: Array<ActionInfo> = this.calcedFrees();
+  public status: Status = Status.Free;
+  public freeStatus: ActionInfo = this.findAction(ActionKind.Move);
   private purposePos: Point = { x: 0, y: 0 };
   private readonly hitTestLines: Array<Line> = HitTestLines.linesWithNormal();
-  private context: SetupContext;
   private touchDisabled: boolean = false;
+  private step: number = 0;
 
-  constructor (context: SetupContext) {
-    this.context = context
-    if (this.freeStatus.init) this.freeStatus.init.apply(this)
+  private setInterval () {
+    window.setInterval(() => { this.interval() }, 20)
   }
 
-  private factoryFrees (): Array<FreeInfo> {
+  private interval () {
+    switch (this.status) {
+      case Status.Free:
+        return this.free()
+      case Status.Delivery:
+        return this.delivery()
+    }
+  }
+
+  private factoryActions (): Array<ActionInfo> {
     return [
       {
-        action: PetStatus.Move,
+        action: ActionKind.Move,
         weight: 70,
         calcedWeight: 0,
         message: '迅速に遊んでいます。',
         frame: 0,
-        kind: ActionKind.Free,
+        category: ActionCategory.Free,
         init: this.moveInit,
         before: this.moveBefore
       },
       {
-        action: PetStatus.Sleep,
+        action: ActionKind.Sleep,
         weight: 7,
         calcedWeight: 0,
-        message: `${this.account().name}は眠たいみたいです。`,
+        message: `#petは眠たいみたいです。`,
         frame: 100,
-        kind: ActionKind.Free,
+        category: ActionCategory.Free,
         init: this.sleepInit,
         after: this.setRandomFreeByFrame
       },
       {
-        action: PetStatus.Stroke,
-        message: `${this.account().name}は喜んでいます。`,
+        action: ActionKind.Stroke,
+        message: `#petは喜んでいます。`,
         frame: 20,
-        kind: ActionKind.All,
+        category: ActionCategory.All,
         init: this.strokeInit,
         after: this.setRandomFreeByFrame
       },
       {
-        action: PetStatus.Hit,
-        message: `${this.account().name}は怒っています！`,
+        action: ActionKind.Hit,
+        message: `#petは怒っています！`,
         frame: 60,
-        kind: ActionKind.All,
+        category: ActionCategory.All,
         init: this.hitInit,
         after: this.setRandomFreeByFrame,
         finish: this.hitFinish
@@ -81,9 +91,9 @@ export default class Pet {
     ]
   }
 
-  private calcedFrees (): Array<FreeInfo> {
-    let frees: Array<FreeInfo> = this.factoryFrees()
-    frees = frees.filter((free: FreeInfo) => free.kind === ActionKind.Free)
+  private calcedFrees (): Array<ActionInfo> {
+    let frees: Array<ActionInfo> = this.factoryActions()
+    frees = frees.filter((free: ActionInfo) => free.category === ActionCategory.Free)
     let curWeight = 0
     frees.forEach(free => {
       curWeight += free.weight!
@@ -99,22 +109,27 @@ export default class Pet {
     this.purposePos = Vector.add(this.pos, move)
   }
 
+  public message () {
+    const name = this.account().name
+    return this.freeStatus.message.replace(/#pet/g, name)
+  }
+
   private moveBefore () {
-    if (this.move({ purposePos: this.purposePos, linesWithNormal: this.hitTestLines })) {
+    if (this.move({ purposePos: this.purposePos, linesWithNormal: this.hitTestLines }) !== MoveResult.Move) {
       this.setFree()
     }
   }
 
   // 移動アルゴリズム
-  private move ({ purposePos, linesWithNormal }: { purposePos: Point, linesWithNormal: Array<Line> }): boolean {
-    let moveFin: boolean = false
+  private move ({ purposePos, linesWithNormal }: { purposePos: Point, linesWithNormal: Array<Line> }): MoveResult {
+    let moveResult: MoveResult = MoveResult.Move
 
     // 移動すべきベクトル
     let purpose: Point = { x: purposePos.x - this.pos.x, y: purposePos.y - this.pos.y }
     const purposeNor: Point = Vector.normalize(purpose)
 
     // 目的地に到着している
-    if (Vector.pLength(purpose) < Pet.MOVE) return true
+    if (Vector.pLength(purpose) < Pet.MOVE) return MoveResult.Finish
 
     // MOVE分ペット移動
     purpose = Vector.scale(purposeNor, Pet.MOVE)
@@ -144,30 +159,30 @@ export default class Pet {
           // 上にいるのでボールの半径の法線の分戻す（法線は時計回り90°回転させた方向のベクトルなので戻る方向を向いている）
           const re = Vector.scale(line.normal!, Pet.RADIUS)
           this.pos = Vector.add(re, c)
-          moveFin = true
+          moveResult = MoveResult.Hit
         }
       }
     })
 
-    this.element().style.left = `${this.pos.x - Pet.RADIUS}px`
-    this.element().style.top = `${this.pos.y - Pet.RADIUS}px`
+    this.petElm().style.left = `${this.pos.x - Pet.RADIUS}px`
+    this.petElm().style.top = `${this.pos.y - Pet.RADIUS}px`
 
-    return moveFin
+    return moveResult
   }
 
   // 寝る開始で寝るアイコン表示
   private sleepInit () {
-    this.element().classList.add('sleep')
+    this.petElm().classList.add('sleep')
   }
 
   // 喜ぶアイコン表示
   private strokeInit () {
-    this.element().classList.add('stroke')
+    this.petElm().classList.add('stroke')
   }
 
   // 叩くアイコン表示
   private hitInit () {
-    this.element().classList.add('hit')
+    this.petElm().classList.add('hit')
     this.touchDisabled = true
   }
 
@@ -177,51 +192,92 @@ export default class Pet {
   }
 
   // 重みから次のランダムの動きを取得
-  private randomFree (): FreeInfo {
+  private randomFree (): ActionInfo {
     const totalWeight = this.frees[this.frees.length - 1].calcedWeight!
     const pickedWeight = Math.random() * totalWeight
     return this.frees.find(free => pickedWeight <= free.calcedWeight!)!
   }
 
   // 自由行動
-  public free () {
+  private free () {
     if (this.freeStatus.before) this.freeStatus.before.apply(this)
     this.frame++
     if (this.freeStatus.after) this.freeStatus.after.apply(this)
   }
 
+  public setDelivery () {
+    this.status = Status.Delivery
+    this.step = 0
+  }
+
+  private delivery (): void {
+    switch (this.step) {
+      case 0:
+        this.purposePos = { x: 140, y: 240 }
+        this.postElm().classList.add('letter')
+        if (this.move({ purposePos: this.purposePos, linesWithNormal: this.hitTestLines }) === MoveResult.Finish) {
+          this.postElm().classList.remove('letter')
+          this.step++
+        }
+        return
+      case 1:
+        this.purposePos = { x: 150, y: 160 }
+        if (this.move({ purposePos: this.purposePos, linesWithNormal: this.hitTestLines }) === MoveResult.Finish) {
+          this.step++
+        }
+        return
+      case 2:
+        this.purposePos = { x: 320, y: 130 }
+        if (this.move({ purposePos: this.purposePos, linesWithNormal: this.hitTestLines }) === MoveResult.Finish) {
+          this.doorElm().classList.add('open')
+          this.step++
+          this.clearFrame()
+        }
+        return
+      case 3:
+        this.frame++
+        if (this.frame > 50) {
+          this.doorElm().classList.remove('open')
+          this.step++
+        }
+        return
+      case 4:
+        this.status = Status.Free
+    }
+  }
+
   // 初期化
   public init () {
     this.actionInit()
-    this.setMessage()
     this.setAvatar()
     this.listenerStroke()
     this.listenerHit()
+    this.setInterval()
   }
 
   // なでる
   private listenerStroke () {
-    this.element().addEventListener('mousemove', (evt) => {
-      if (!this.touchDisabled) this.setFree(this.findAction(PetStatus.Stroke))
+    this.petElm().addEventListener('mousemove', (evt) => {
+      if (!this.touchDisabled) this.setFree(this.findAction(ActionKind.Stroke))
     })
   }
 
   // たたく
   private listenerHit () {
-    this.element().addEventListener('mousedown', (evt) => {
-      this.setFree(this.findAction(PetStatus.Hit))
+    this.petElm().addEventListener('mousedown', (evt) => {
+      this.setFree(this.findAction(ActionKind.Hit))
     })
   }
 
   // 該当の行動を取得する
-  private findAction (status: PetStatus) :FreeInfo {
+  private findAction (status: ActionKind) :ActionInfo {
     return this.actions.find(free => free.action === status)!
   }
 
   // アバター設定
   private setAvatar () {
-    this.element().style.backgroundImage = `url(${this.account().avatar})`
-    this.element().style.display = 'block'
+    this.petElm().style.backgroundImage = `url(${this.account().avatar})`
+    this.petElm().style.display = 'block'
   }
 
   private actionInit () {
@@ -229,21 +285,24 @@ export default class Pet {
   }
 
   // ランダムで次の動きを取得して設定
-  private setFree (action: FreeInfo = this.randomFree()) {
+  private setFree (action: ActionInfo = this.randomFree()) {
     if (this.freeStatus.finish) this.freeStatus.finish.apply(this)
     this.freeStatus = action
-    this.setMessage()
     this.clearFrame()
     this.removeClass()
     this.actionInit()
   }
 
-  private setMessage () {
-    this.context.emit('setMessage', this.freeStatus.message)
+  private petElm (): HTMLElement {
+    return document.getElementById('pet')!
   }
 
-  private element (): HTMLElement {
-    return document.getElementById('pet')!
+  private postElm (): HTMLElement {
+    return document.getElementById('post')!
+  }
+
+  private doorElm (): HTMLElement {
+    return document.getElementById('door')!
   }
 
   private account (): Account {
@@ -256,7 +315,7 @@ export default class Pet {
 
   // 表情をリセット
   private removeClass () {
-    this.element().className = ''
+    this.petElm().className = ''
   }
 
   private setRandomFreeByFrame () {
